@@ -20,6 +20,11 @@ export const updateProject = async (projectId, payload) => {
   return data;
 };
 
+export const deleteProject = async (projectId) => {
+  const { data } = await axiosClient.delete(`/projects/${projectId}`);
+  return data;
+};
+
 export const addMemberToProject = async (projectId, payload) => {
   const { data } = await axiosClient.post(`/projects/${projectId}/members`, payload);
   return data;
@@ -27,5 +32,10 @@ export const addMemberToProject = async (projectId, payload) => {
 
 export const fetchProjectMembers = async (projectId) => {
   const { data } = await axiosClient.get(`/projects/${projectId}/members`);
+  return data;
+};
+
+export const removeMemberFromProject = async (projectId, userId) => {
+  const { data } = await axiosClient.delete(`/projects/${projectId}/members/${userId}`);
   return data;
 };

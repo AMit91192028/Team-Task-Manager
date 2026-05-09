@@ -5,7 +5,10 @@ export default function TaskTable({
   tasks,
   showProject = false,
   currentUser,
-  onStatusChange
+  onStatusChange,
+  onEditTask,
+  onDeleteTask,
+  actionTaskId
 }) {
   return (
     <div className="task-table-wrap">
@@ -18,6 +21,7 @@ export default function TaskTable({
             <th>Priority</th>
             <th>Due Date</th>
             <th>Status</th>
+            {onEditTask || onDeleteTask ? <th>Actions</th> : null}
           </tr>
         </thead>
         <tbody>
@@ -28,6 +32,7 @@ export default function TaskTable({
                 String(task.assignedTo?._id) === String(currentUser?.id) ||
                 String(task.createdBy?._id) === String(currentUser?.id)
               );
+            const isBusy = actionTaskId === task._id;
 
             return (
               <tr key={task._id}>
@@ -61,6 +66,32 @@ export default function TaskTable({
                     </span>
                   )}
                 </td>
+                {onEditTask || onDeleteTask ? (
+                  <td>
+                    <div className="task-table__actions">
+                      {onEditTask ? (
+                        <button
+                          type="button"
+                          className="task-table__action-button"
+                          onClick={() => onEditTask(task)}
+                          disabled={isBusy}
+                        >
+                          Edit
+                        </button>
+                      ) : null}
+                      {onDeleteTask ? (
+                        <button
+                          type="button"
+                          className="task-table__action-button task-table__action-button--danger"
+                          onClick={() => onDeleteTask(task)}
+                          disabled={isBusy}
+                        >
+                          {isBusy ? "Deleting..." : "Delete"}
+                        </button>
+                      ) : null}
+                    </div>
+                  </td>
+                ) : null}
               </tr>
             );
           })}

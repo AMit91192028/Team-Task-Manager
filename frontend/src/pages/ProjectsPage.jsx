@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { createProject, fetchProjects } from "../api/projectService";
+import { createProject, deleteProject, fetchProjects } from "../api/projectService";
 import EmptyState from "../components/EmptyState";
 import LoadingScreen from "../components/LoadingScreen";
 import PageHeader from "../components/PageHeader";
@@ -17,6 +17,7 @@ export default function ProjectsPage() {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingProjectId, setDeletingProjectId] = useState("");
 
   const loadProjects = async () => {
     try {
@@ -54,6 +55,28 @@ export default function ProjectsPage() {
       setFormError(getApiErrorMessage(submitError));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteProject = async (project) => {
+    const shouldDelete = window.confirm(
+      `Delete project "${project.name}"? This will also delete its tasks.`
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setError("");
+    setDeletingProjectId(project._id);
+
+    try {
+      await deleteProject(project._id);
+      await loadProjects();
+    } catch (deleteError) {
+      setError(getApiErrorMessage(deleteError));
+    } finally {
+      setDeletingProjectId("");
     }
   };
 
@@ -118,7 +141,13 @@ export default function ProjectsPage() {
           {projects.length ? (
             <div className="projects-page__grid">
               {projects.map((project) => (
-                <ProjectCard key={project._id} project={project} />
+                <ProjectCard
+                  key={project._id}
+                  project={project}
+                  canDelete={isAdmin}
+                  isDeleting={deletingProjectId === project._id}
+                  onDelete={handleDeleteProject}
+                />
               ))}
             </div>
           ) : (

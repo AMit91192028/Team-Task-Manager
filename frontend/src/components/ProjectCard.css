@@ -9,6 +9,11 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+.project-card__link {
+  display: grid;
+  gap: 16px;
+}
+
 .project-card:hover {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
@@ -37,6 +42,19 @@
   background: rgba(15, 118, 110, 0.12);
   color: var(--brand);
   text-transform: capitalize;
+}
+
+.project-card__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.project-card__danger-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(209, 67, 67, 0.12);
+  color: var(--danger);
 }
 
 @media (max-width: 520px) {

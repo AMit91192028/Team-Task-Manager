@@ -5,6 +5,11 @@ export const fetchTasks = async () => {
   return data;
 };
 
+export const fetchTaskById = async (taskId) => {
+  const { data } = await axiosClient.get(`/tasks/${taskId}`);
+  return data;
+};
+
 export const fetchMyTasks = async () => {
   const { data } = await axiosClient.get("/tasks/my-tasks");
   return data;
@@ -17,6 +22,16 @@ export const fetchTasksByProject = async (projectId) => {
 
 export const createTask = async (payload) => {
   const { data } = await axiosClient.post("/tasks", payload);
+  return data;
+};
+
+export const updateTask = async (taskId, payload) => {
+  const { data } = await axiosClient.put(`/tasks/${taskId}`, payload);
+  return data;
+};
+
+export const deleteTask = async (taskId) => {
+  const { data } = await axiosClient.delete(`/tasks/${taskId}`);
   return data;
 };
 

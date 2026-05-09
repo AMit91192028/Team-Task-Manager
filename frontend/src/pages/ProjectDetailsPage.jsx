@@ -1,12 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   addMemberToProject,
+  deleteProject,
   fetchProjectById,
   fetchProjectMembers,
+  removeMemberFromProject,
   updateProject
 } from "../api/projectService";
-import { createTask, fetchTasksByProject, updateTaskStatus } from "../api/taskService";
+import {
+  createTask,
+  deleteTask,
+  fetchTaskById,
+  fetchTasksByProject,
+  updateTask,
+  updateTaskStatus
+} from "../api/taskService";
 import EmptyState from "../components/EmptyState";
 import LoadingScreen from "../components/LoadingScreen";
 import PageHeader from "../components/PageHeader";
@@ -16,6 +25,7 @@ import { getApiErrorMessage } from "../utils/apiError";
 import "./ProjectDetailsPage.css";
 
 export default function ProjectDetailsPage() {
+  const navigate = useNavigate();
   const { projectId } = useParams();
   const { user } = useAuth();
   const [project, setProject] = useState(null);
@@ -26,6 +36,10 @@ export default function ProjectDetailsPage() {
   const [projectError, setProjectError] = useState("");
   const [memberError, setMemberError] = useState("");
   const [taskError, setTaskError] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState("");
+  const [activeMemberId, setActiveMemberId] = useState("");
+  const [activeTaskId, setActiveTaskId] = useState("");
+  const [isDeletingProject, setIsDeletingProject] = useState(false);
   const [projectForm, setProjectForm] = useState({
     name: "",
     description: "",
@@ -45,6 +59,33 @@ export default function ProjectDetailsPage() {
     return String(project.createdBy?._id) === String(user.id);
   }, [project, user]);
 
+  const getAssignableMembers = (projectData = project, memberList = members) =>
+    (memberList || []).filter(
+      (member) => String(member._id) !== String(projectData?.createdBy?._id)
+    );
+
+  const resetTaskForm = (projectData = project, memberList = members) => {
+    const assignableMembers = getAssignableMembers(projectData, memberList);
+
+    setEditingTaskId("");
+    setTaskError("");
+    setTaskForm({
+      title: "",
+      description: "",
+      assignedTo: assignableMembers[0]?.email || "",
+      priority: "medium",
+      dueDate: ""
+    });
+  };
+
+  const formatDateForInput = (value) => {
+    if (!value) return "";
+
+    const date = new Date(value);
+    const offset = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+  };
+
   const loadProjectData = async () => {
     try {
       setError("");
@@ -62,8 +103,9 @@ export default function ProjectDetailsPage() {
         description: projectResponse.project.description || "",
         status: projectResponse.project.status
       });
-      const assignableMembers = (membersResponse.members || []).filter(
-        (member) => String(member._id) !== String(projectResponse.project.createdBy?._id)
+      const assignableMembers = getAssignableMembers(
+        projectResponse.project,
+        membersResponse.members || []
       );
 
       setTaskForm((current) => ({
@@ -130,24 +172,27 @@ export default function ProjectDetailsPage() {
     }
   };
 
-  const handleCreateTask = async (event) => {
+  const handleTaskSubmit = async (event) => {
     event.preventDefault();
     setTaskError("");
+    setActiveTaskId(editingTaskId || "new");
 
     try {
-      await createTask({
-        ...taskForm,
-        project: projectId
-      });
-      setTaskForm((current) => ({
-        ...current,
-        title: "",
-        description: "",
-        dueDate: ""
-      }));
+      if (editingTaskId) {
+        await updateTask(editingTaskId, taskForm);
+      } else {
+        await createTask({
+          ...taskForm,
+          project: projectId
+        });
+      }
+
+      resetTaskForm();
       await loadProjectData();
     } catch (submitError) {
       setTaskError(getApiErrorMessage(submitError));
+    } finally {
+      setActiveTaskId("");
     }
   };
 
@@ -157,6 +202,102 @@ export default function ProjectDetailsPage() {
       await loadProjectData();
     } catch (statusError) {
       setError(getApiErrorMessage(statusError));
+    }
+  };
+
+  const handleEditTask = async (task) => {
+    setTaskError("");
+    setActiveTaskId(task._id);
+
+    try {
+      const response = await fetchTaskById(task._id);
+      const selectedTask = response.task;
+
+      setEditingTaskId(selectedTask._id);
+      setTaskForm({
+        title: selectedTask.title || "",
+        description: selectedTask.description || "",
+        assignedTo: selectedTask.assignedTo?.email || "",
+        priority: selectedTask.priority || "medium",
+        dueDate: formatDateForInput(selectedTask.dueDate)
+      });
+    } catch (loadError) {
+      setTaskError(getApiErrorMessage(loadError));
+    } finally {
+      setActiveTaskId("");
+    }
+  };
+
+  const handleDeleteTask = async (task) => {
+    const shouldDelete = window.confirm(`Delete task "${task.title}"?`);
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setTaskError("");
+    setActiveTaskId(task._id);
+
+    try {
+      await deleteTask(task._id);
+
+      if (editingTaskId === task._id) {
+        resetTaskForm();
+      }
+
+      await loadProjectData();
+    } catch (deleteError) {
+      setTaskError(getApiErrorMessage(deleteError));
+    } finally {
+      setActiveTaskId("");
+    }
+  };
+
+  const handleRemoveMember = async (member) => {
+    const shouldRemove = window.confirm(
+      `Remove ${member.name} from this project? Their assigned tasks in this project will also be deleted.`
+    );
+
+    if (!shouldRemove) {
+      return;
+    }
+
+    setMemberError("");
+    setActiveMemberId(member._id);
+
+    try {
+      await removeMemberFromProject(projectId, member._id);
+
+      if (taskForm.assignedTo === member.email) {
+        resetTaskForm(project, members.filter((item) => item._id !== member._id));
+      }
+
+      await loadProjectData();
+    } catch (removeError) {
+      setMemberError(getApiErrorMessage(removeError));
+    } finally {
+      setActiveMemberId("");
+    }
+  };
+
+  const handleDeleteProject = async () => {
+    const shouldDelete = window.confirm(
+      `Delete project "${project.name}"? This will also delete all related tasks.`
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setError("");
+    setIsDeletingProject(true);
+
+    try {
+      await deleteProject(projectId);
+      navigate("/projects", { replace: true });
+    } catch (deleteError) {
+      setError(getApiErrorMessage(deleteError));
+      setIsDeletingProject(false);
     }
   };
 
@@ -181,7 +322,21 @@ export default function ProjectDetailsPage() {
         eyebrow={isProjectAdmin ? "Admin Access" : "Member Access"}
         title={project.name}
         description={project.description || "No project description added yet."}
-        actions={<span className="project-details-page__status">{project.status}</span>}
+        actions={
+          <div className="project-details-page__header-actions">
+            <span className="project-details-page__status">{project.status}</span>
+            {isProjectAdmin ? (
+              <button
+                type="button"
+                className="project-details-page__danger-button"
+                disabled={isDeletingProject}
+                onClick={handleDeleteProject}
+              >
+                {isDeletingProject ? "Deleting..." : "Delete project"}
+              </button>
+            ) : null}
+          </div>
+        }
       />
 
       {error ? <div className="project-details-page__error">{error}</div> : null}
@@ -239,8 +394,8 @@ export default function ProjectDetailsPage() {
                 <button type="submit">Add member</button>
               </form>
 
-              <form className="project-details-page__card" onSubmit={handleCreateTask}>
-                <h2>Create Task</h2>
+              <form className="project-details-page__card" onSubmit={handleTaskSubmit}>
+                <h2>{editingTaskId ? "Edit Task" : "Create Task"}</h2>
                 <label>
                   Title
                   <input
@@ -308,9 +463,26 @@ export default function ProjectDetailsPage() {
                   />
                 </label>
                 {taskError ? <div className="project-details-page__error">{taskError}</div> : null}
-                <button type="submit" disabled={!taskForm.assignedTo}>
-                  Create task
-                </button>
+                <div className="project-details-page__button-row">
+                  {editingTaskId ? (
+                    <button
+                      type="button"
+                      className="project-details-page__ghost-button"
+                      onClick={() => resetTaskForm()}
+                    >
+                      Cancel edit
+                    </button>
+                  ) : null}
+                  <button type="submit" disabled={!taskForm.assignedTo || activeTaskId === "new"}>
+                    {editingTaskId
+                      ? activeTaskId === editingTaskId
+                        ? "Saving..."
+                        : "Save task"
+                      : activeTaskId === "new"
+                        ? "Creating..."
+                        : "Create task"}
+                  </button>
+                </div>
               </form>
             </div>
           ) : null}
@@ -326,6 +498,9 @@ export default function ProjectDetailsPage() {
                 tasks={tasks}
                 currentUser={user}
                 onStatusChange={handleStatusChange}
+                onEditTask={isProjectAdmin ? handleEditTask : undefined}
+                onDeleteTask={isProjectAdmin ? handleDeleteTask : undefined}
+                actionTaskId={activeTaskId}
               />
             ) : (
               <EmptyState
@@ -353,7 +528,20 @@ export default function ProjectDetailsPage() {
                   <strong>{member.name}</strong>
                   <p>{member.email}</p>
                 </div>
-                <span>{String(member._id) === String(project.createdBy?._id) ? "Admin" : "Member"}</span>
+                <div className="project-details-page__member-actions">
+                  <span>{String(member._id) === String(project.createdBy?._id) ? "Admin" : "Member"}</span>
+                  {isProjectAdmin &&
+                  String(member._id) !== String(project.createdBy?._id) ? (
+                    <button
+                      type="button"
+                      className="project-details-page__member-button"
+                      disabled={activeMemberId === member._id}
+                      onClick={() => handleRemoveMember(member)}
+                    >
+                      {activeMemberId === member._id ? "Removing..." : "Remove"}
+                    </button>
+                  ) : null}
+                </div>
               </article>
             ))}
           </div>

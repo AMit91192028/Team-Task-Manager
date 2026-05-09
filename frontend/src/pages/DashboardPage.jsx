@@ -5,7 +5,7 @@ import {
   fetchTaskStatusCount
 } from "../api/dashboardService";
 import { createProject, fetchProjects } from "../api/projectService";
-import { fetchMyTasks } from "../api/taskService";
+import { fetchMyTasks, fetchTasks } from "../api/taskService";
 import EmptyState from "../components/EmptyState";
 import LoadingScreen from "../components/LoadingScreen";
 import PageHeader from "../components/PageHeader";
@@ -40,7 +40,7 @@ export default function DashboardPage() {
           fetchDashboardSummary(),
           fetchTaskStatusCount(),
           fetchOverdueTasks(),
-          fetchMyTasks(),
+          isAdmin ? fetchTasks() : fetchMyTasks(),
           fetchProjects()
         ]);
 
@@ -222,16 +222,24 @@ export default function DashboardPage() {
 
       <section className="dashboard-page__panel">
         <div className="dashboard-page__section-head">
-          <h2>My Tasks</h2>
-          <p>Update progress quickly from your personal work queue.</p>
+          <h2>{isAdmin ? "All Tasks" : "My Tasks"}</h2>
+          <p>
+            {isAdmin
+              ? "Track every task created across your projects."
+              : "Update progress quickly from your personal work queue."}
+          </p>
         </div>
 
         {data.myTasks.length ? (
           <TaskTable tasks={data.myTasks} currentUser={user} showProject />
         ) : (
           <EmptyState
-            title="No assigned tasks"
-            description="Once tasks are assigned to you, they will appear here."
+            title={isAdmin ? "No project tasks yet" : "No assigned tasks"}
+            description={
+              isAdmin
+                ? "Create tasks inside a project to start tracking delivery."
+                : "Once tasks are assigned to you, they will appear here."
+            }
           />
         )}
       </section>
