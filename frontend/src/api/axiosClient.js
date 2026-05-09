@@ -1,7 +1,6 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "/api";
-
+const baseURL = "https://team-task-manager-52nx.onrender.com/api";
 const axiosClient = axios.create({
   baseURL,
   withCredentials: true
