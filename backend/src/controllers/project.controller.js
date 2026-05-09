@@ -155,7 +155,8 @@ async function deleteProject(req, res) {
 
 async function addMemberToProject(req, res) {
   try {
-    const { userId, email } = req.body;
+    const { email } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
     const project = await Project.findById(req.params.projectId);
 
     if (!project) {
@@ -172,14 +173,12 @@ async function addMemberToProject(req, res) {
       });
     }
 
-    const user = userId
-      ? await User.findById(userId)
-      : await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (!user || user.role !== "member") {
       return res.status(400).json({
         success: false,
-        message: "Not a member account"
+        message: "No member account found with this email"
       });
     }
 

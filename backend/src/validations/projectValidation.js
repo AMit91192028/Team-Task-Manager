@@ -49,22 +49,10 @@ const addMemberValidation = [
     .isMongoId()
     .withMessage("Invalid project id"),
 
-  body()
-    .custom((value, { req }) => {
-      if (!req.body.userId && !req.body.email) {
-        throw new Error("Either userId or email is required");
-      }
-
-      return true;
-    }),
-
-  body("userId")
-    .optional()
-    .isMongoId()
-    .withMessage("Invalid user id"),
-
   body("email")
-    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Member email is required")
     .isEmail()
     .withMessage("Invalid email address")
 ];

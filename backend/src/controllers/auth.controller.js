@@ -15,53 +15,62 @@ function getCookieOptions() {
 }
 
 async function registerUser(req,res){
-    const{name, email,password, role} = req.body;
+    try {
+        const{name, email,password, role} = req.body;
+        const normalizedEmail = email.toLowerCase().trim();
 
-    const isUserAlreadyExists = await userModel.findOne({
-        email: email.toLowerCase()
-    });
+        const isUserAlreadyExists = await userModel.findOne({
+            email: normalizedEmail
+        });
 
-    if(isUserAlreadyExists){
-        return res.status(409).json({message:"An account with this email already exists"});
-    }
+        if(isUserAlreadyExists){
+            return res.status(409).json({message:"An account with this email already exists"});
+        }
 
-    const hash = await bcrypt.hash(password,10);
-    const assignedRole = role === "admin" ? "admin" : "member";
+        const hash = await bcrypt.hash(password,10);
+        const assignedRole = role === "admin" ? "admin" : "member";
 
-    const user = await userModel.create({
-        name,
-        email: email.toLowerCase(),
-        password:hash,
-        role: assignedRole
-    })
+        const user = await userModel.create({
+            name,
+            email: normalizedEmail,
+            password:hash,
+            role: assignedRole
+        })
 
 
-    const token = jwt.sign({
-        id:user._id,
-        name:user.name,
-        email:user.email,
-        role:user.role
- },process.env.JWT_SECRET,{expiresIn:'1d'})
-
-    res.cookie('token', token, getCookieOptions())
-
-    res.status(201).json({message:"User registered successfully",
-        token,
-        user:{
+        const token = jwt.sign({
             id:user._id,
             name:user.name,
             email:user.email,
-            role:user.role,
-}})
+            role:user.role
+     },process.env.JWT_SECRET,{expiresIn:'1d'})
 
+        res.cookie('token', token, getCookieOptions())
+
+        res.status(201).json({message:"User registered successfully",
+            token,
+            user:{
+                id:user._id,
+                name:user.name,
+                email:user.email,
+                role:user.role,
+    }})
+    } catch (err) {
+        if (err.code === 11000 && err.keyPattern?.email) {
+            return res.status(409).json({ message: "An account with this email already exists" });
+        }
+
+        return res.status(500).json({ message: err.message || "Internal Server Error" });
+    }
 }
 
 
 async function loginUser(req, res) {
     try {
         const { email, password } = req.body;
+        const normalizedEmail = email.toLowerCase().trim();
 
-        const user = await userModel.findOne({email}).select('+password');
+        const user = await userModel.findOne({email: normalizedEmail}).select('+password');
 
         if (!user) return res.status(401).json({ message: 'Invalid credentials' });
 
@@ -91,7 +100,7 @@ async function loginUser(req, res) {
             }
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ message: err.message || "Internal Server Error" });
     }
 }
 

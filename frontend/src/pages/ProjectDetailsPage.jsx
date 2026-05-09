@@ -31,7 +31,7 @@ export default function ProjectDetailsPage() {
     description: "",
     status: "active"
   });
-  const [memberForm, setMemberForm] = useState({ userId: "" });
+  const [memberForm, setMemberForm] = useState({ email: "" });
   const [taskForm, setTaskForm] = useState({
     title: "",
     description: "",
@@ -68,7 +68,10 @@ export default function ProjectDetailsPage() {
 
       setTaskForm((current) => ({
         ...current,
-        assignedTo: assignableMembers[0]?._id || ""
+        assignedTo:
+          assignableMembers.find((member) => member.email === current.assignedTo)?.email ||
+          assignableMembers[0]?.email ||
+          ""
       }));
     } catch (loadError) {
       setError(getApiErrorMessage(loadError));
@@ -89,7 +92,10 @@ export default function ProjectDetailsPage() {
   };
 
   const handleMemberField = (event) => {
-    setMemberForm({ userId: event.target.value });
+    setMemberForm((current) => ({
+      ...current,
+      [event.target.name]: event.target.value
+    }));
   };
 
   const handleTaskField = (event) => {
@@ -117,7 +123,7 @@ export default function ProjectDetailsPage() {
 
     try {
       await addMemberToProject(projectId, memberForm);
-      setMemberForm({ userId: "" });
+      setMemberForm({ email: "" });
       await loadProjectData();
     } catch (submitError) {
       setMemberError(getApiErrorMessage(submitError));
@@ -219,12 +225,13 @@ export default function ProjectDetailsPage() {
               <form className="project-details-page__card" onSubmit={handleAddMember}>
                 <h2>Add Member</h2>
                 <label>
-                  Member user ID
+                  Member email
                   <input
-                    name="userId"
-                    value={memberForm.userId}
+                    type="email"
+                    name="email"
+                    value={memberForm.email}
                     onChange={handleMemberField}
-                    placeholder="Paste member user id"
+                    placeholder="member@example.com"
                     required
                   />
                 </label>
@@ -262,14 +269,17 @@ export default function ProjectDetailsPage() {
                       onChange={handleTaskField}
                       required
                     >
+                      <option value="" disabled>
+                        Select member email
+                      </option>
                       {members
                         .filter(
                           (member) =>
                             String(member._id) !== String(project.createdBy?._id)
                         )
                         .map((member) => (
-                        <option key={member._id} value={member._id}>
-                          {member.name}
+                        <option key={member._id} value={member.email}>
+                          {member.name} ({member.email})
                         </option>
                         ))}
                     </select>
@@ -298,7 +308,9 @@ export default function ProjectDetailsPage() {
                   />
                 </label>
                 {taskError ? <div className="project-details-page__error">{taskError}</div> : null}
-                <button type="submit">Create task</button>
+                <button type="submit" disabled={!taskForm.assignedTo}>
+                  Create task
+                </button>
               </form>
             </div>
           ) : null}

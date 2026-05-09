@@ -20,11 +20,19 @@ const createTaskValidation = [
     .isMongoId()
     .withMessage("Invalid project id"),
 
+  body()
+    .custom((value, { req }) => {
+      if (!req.body.assignedTo) {
+        throw new Error("Assigned member email is required");
+      }
+
+      return true;
+    }),
+
   body("assignedTo")
-    .notEmpty()
-    .withMessage("Assigned user id is required")
-    .isMongoId()
-    .withMessage("Invalid assigned user id"),
+    .trim()
+    .isEmail()
+    .withMessage("Invalid assigned member email"),
 
   body("priority")
     .optional()
@@ -57,8 +65,9 @@ const updateTaskValidation = [
 
   body("assignedTo")
     .optional()
-    .isMongoId()
-    .withMessage("Invalid assigned user id"),
+    .trim()
+    .isEmail()
+    .withMessage("Invalid assigned member email"),
 
   body("priority")
     .optional()

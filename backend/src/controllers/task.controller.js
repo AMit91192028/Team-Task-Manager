@@ -11,6 +11,44 @@ function sendControllerError(res, error) {
   });
 }
 
+async function resolveAssignedMember({ assignedTo, project }) {
+  const normalizedEmail = assignedTo ? assignedTo.toLowerCase().trim() : null;
+  const assignedUser = await User.findOne({ email: normalizedEmail });
+
+  if (!assignedUser) {
+    return {
+      error: {
+        status: 404,
+        message: "Assigned member not found"
+      }
+    };
+  }
+
+  if (assignedUser.role !== "member") {
+    return {
+      error: {
+        status: 400,
+        message: "Tasks can only be assigned to member accounts"
+      }
+    };
+  }
+
+  const isProjectMember = project.members.some(
+    (memberId) => memberId.toString() === assignedUser._id.toString()
+  );
+
+  if (!isProjectMember) {
+    return {
+      error: {
+        status: 400,
+        message: "Assigned member must be part of this project"
+      }
+    };
+  }
+
+  return { assignedUser };
+}
+
 async function createTask(req, res) {
   try {
     const { title, description, project, assignedTo, priority, dueDate } = req.body;
@@ -30,23 +68,15 @@ async function createTask(req, res) {
       });
     }
 
-    const assignedUser = await User.findById(assignedTo);
+    const { assignedUser, error } = await resolveAssignedMember({
+      assignedTo,
+      project: foundProject
+    });
 
-    if (!assignedUser) {
-      return res.status(404).json({
+    if (error) {
+      return res.status(error.status).json({
         success: false,
-        message: "Assigned user not found"
-      });
-    }
-
-    const isProjectMember = foundProject.members.some(
-      (memberId) => memberId.toString() === assignedTo
-    );
-
-    if (!isProjectMember) {
-      return res.status(400).json({
-        success: false,
-        message: "Assigned user must be a member of this project"
+        message: error.message
       });
     }
 
@@ -54,7 +84,7 @@ async function createTask(req, res) {
       title,
       description,
       project,
-      assignedTo,
+      assignedTo: assignedUser._id,
       createdBy: req.user._id,
       priority,
       dueDate
@@ -237,18 +267,19 @@ async function updateTask(req, res) {
     }
 
     if (assignedTo) {
-      const isProjectMember = project.members.some(
-        (memberId) => memberId.toString() === assignedTo
-      );
+      const { assignedUser, error } = await resolveAssignedMember({
+        assignedTo,
+        project
+      });
 
-      if (!isProjectMember) {
-        return res.status(400).json({
+      if (error) {
+        return res.status(error.status).json({
           success: false,
-          message: "Assigned user must be a member of this project"
+          message: error.message
         });
       }
 
-      task.assignedTo = assignedTo;
+      task.assignedTo = assignedUser._id;
     }
 
     task.title = title || task.title;
