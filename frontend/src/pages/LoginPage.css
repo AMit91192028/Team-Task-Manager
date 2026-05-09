@@ -1,0 +1,234 @@
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+.auth-page__hero {
+  width: min(1140px, 100%);
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 24px;
+}
+
+.auth-page__hero--signup .auth-page__copy {
+  background: linear-gradient(135deg, #11203f, #0f766e);
+}
+
+.auth-page__copy,
+.auth-page__card {
+  padding: 42px;
+  border-radius: 32px;
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-page__copy {
+  background: linear-gradient(135deg, #0f172a, #14213d);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.auth-page__copy h1 {
+  margin: 0;
+  max-width: 10ch;
+  font-size: clamp(2.8rem, 6vw, 4.9rem);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+  position: relative;
+  z-index: 1;
+}
+
+.auth-page__copy p:last-child {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.auth-page__copy::before,
+.auth-page__copy::after {
+  content: "";
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(141, 229, 220, 0.08);
+}
+
+.auth-page__copy::before {
+  width: 240px;
+  height: 240px;
+  top: -40px;
+  right: -60px;
+}
+
+.auth-page__copy::after {
+  width: 180px;
+  height: 180px;
+  bottom: -50px;
+  left: -30px;
+}
+
+.auth-page__eyebrow {
+  margin: 0 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.78rem;
+  color: #8de5dc;
+}
+
+.auth-page__card {
+  background: rgba(255, 255, 255, 0.96);
+  display: grid;
+  gap: 18px;
+}
+
+.auth-page__card h2,
+.auth-page__card p,
+.auth-page__card span {
+  margin: 0;
+}
+
+.auth-page__card form {
+  display: grid;
+  gap: 14px;
+}
+
+.auth-page__card label {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.auth-page__card input,
+.auth-page__card select {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.auth-page__role-stack {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.auth-page__role-card {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  text-align: left;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 22px;
+  min-height: 180px;
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.08), rgba(15, 118, 110, 0.02)),
+    #fff;
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.auth-page__role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(15, 118, 110, 0.35);
+  background:
+    linear-gradient(180deg, rgba(15, 118, 110, 0.14), rgba(15, 118, 110, 0.04)),
+    #fff;
+}
+
+.auth-page__role-card small {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+  color: var(--brand);
+  font-weight: 700;
+}
+
+.auth-page__role-card strong {
+  font-size: 1.25rem;
+  line-height: 1.15;
+}
+
+.auth-page__role-card span {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.auth-page__form-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.auth-page__back-button {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 12px 16px;
+  background: #fff;
+  color: var(--text);
+}
+
+.auth-page__submit-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 18px;
+  background: var(--brand);
+  color: #fff;
+  font-weight: 700;
+}
+
+.auth-page__submit-button:disabled {
+  opacity: 0.75;
+}
+
+.auth-page__error {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(209, 67, 67, 0.1);
+  color: var(--danger);
+}
+
+@media (max-width: 920px) {
+  .auth-page__hero {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-page__role-stack {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .auth-page {
+    padding: 18px;
+  }
+
+  .auth-page__copy,
+  .auth-page__card {
+    padding: 26px;
+  }
+
+  .auth-page__copy {
+    min-height: 220px;
+  }
+
+  .auth-page__form-header {
+    flex-direction: column;
+  }
+
+  .auth-page__role-card {
+    min-height: auto;
+    padding: 18px;
+    border-radius: 20px;
+  }
+}

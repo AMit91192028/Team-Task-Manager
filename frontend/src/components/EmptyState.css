@@ -1,0 +1,17 @@
+.empty-state {
+  padding: 28px;
+  border: 1px dashed rgba(21, 32, 51, 0.18);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.7);
+  text-align: center;
+}
+
+.empty-state h3,
+.empty-state p {
+  margin: 0;
+}
+
+.empty-state p {
+  margin-top: 8px;
+  color: var(--muted);
+}

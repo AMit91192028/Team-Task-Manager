@@ -1,0 +1,69 @@
+.task-table-wrap {
+  overflow-x: auto;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.task-table th,
+.task-table td {
+  padding: 16px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.task-table td p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.task-table select {
+  min-width: 146px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.task-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  text-transform: capitalize;
+}
+
+.task-pill--high {
+  background: rgba(209, 67, 67, 0.12);
+  color: var(--danger);
+}
+
+.task-pill--medium {
+  background: rgba(194, 133, 24, 0.12);
+  color: var(--warning);
+}
+
+.task-pill--low {
+  background: rgba(26, 127, 90, 0.12);
+  color: var(--success);
+}
+
+.task-pill--status-todo {
+  background: rgba(21, 32, 51, 0.08);
+  color: var(--text);
+}
+
+.task-pill--status-in-progress {
+  background: rgba(239, 131, 84, 0.14);
+  color: #b45309;
+}
+
+.task-pill--status-completed {
+  background: rgba(26, 127, 90, 0.12);
+  color: var(--success);
+}

@@ -1,0 +1,18 @@
+.my-tasks-page {
+  display: grid;
+  gap: 24px;
+}
+
+.my-tasks-page__panel {
+  padding: 24px;
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+}
+
+.my-tasks-page__error {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(209, 67, 67, 0.1);
+  color: var(--danger);
+}
