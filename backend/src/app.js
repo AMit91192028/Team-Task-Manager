@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path')
@@ -11,7 +12,7 @@ const { notFound, errorHandler } = require("./middlewares/erroe.middleware");
 const app = express();
 
 app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:5173",
+  origin:"http://localhost:5173",
   credentials: true
 }));
 app.use(express.json());
@@ -25,14 +26,11 @@ app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'ok' });
-});
 
 app.use(notFound);
 app.use(errorHandler);
 
-app.get('*', (req, res) => {
+app.get('*name', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
