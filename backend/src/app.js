@@ -19,7 +19,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser())
 app.use(express.static(path.join(__dirname,'../public')))
 
-
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is healthy"
+  });
+})
 app.use('/api/auth', authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/tasks", taskRoutes);
