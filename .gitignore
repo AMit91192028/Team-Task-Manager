@@ -7,9 +7,7 @@ frontend/node_modules/
 .env
 backend/.env
 frontend/.env
-.env.local
-.env.production
-.env.development
+
 
 # build files
 dist/

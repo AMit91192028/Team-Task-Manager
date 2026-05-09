@@ -1,3 +1,4 @@
+require('dotenv').config();
 const app = require('./src/app')
 const connectToDB = require('./src/db/db')
 
@@ -8,7 +9,7 @@ connectToDB();
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT =3000;
 
 app.listen(PORT, (err) => {
     if (err) {
