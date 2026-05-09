@@ -90,7 +90,7 @@ npm run dev
 Backend URL:
 
 ```text
-http://localhost:3000
+https://team-task-manager-52nx.onrender.com
 ```
 
 ## Run Frontend
@@ -104,7 +104,7 @@ npm run dev
 Frontend URL:
 
 ```text
-http://localhost:5173
+https://team-task-manager-mocha-psi.vercel.app/
 ```
 
 ## Production Build
