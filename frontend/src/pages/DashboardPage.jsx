@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   fetchDashboardSummary,
   fetchOverdueTasks,
@@ -14,6 +14,7 @@ import StatCard from "../components/StatCard";
 import TaskTable from "../components/TaskTable";
 import useAuth from "../hooks/useAuth";
 import { getApiErrorMessage } from "../utils/apiError";
+import { formatDate } from "../utils/formatters";
 import "./DashboardPage.css";
 
 export default function DashboardPage() {
@@ -31,6 +32,51 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const memberProgress = useMemo(() => {
+    if (!isAdmin || !data.myTasks.length) return [];
+
+    const progress = data.myTasks.reduce((map, task) => {
+      const userId = task.assignedTo?._id || task.assignedTo;
+      if (!userId) return map;
+
+      const id = String(userId);
+      if (!map[id]) {
+        map[id] = {
+          id,
+          name: task.assignedTo?.name || "Unknown",
+          email: task.assignedTo?.email || "",
+          total: 0,
+          todo: 0,
+          inProgress: 0,
+          completed: 0,
+          overdue: 0,
+          tasks: []
+        };
+      }
+
+      const member = map[id];
+      member.total += 1;
+      if (task.status === "todo") member.todo += 1;
+      if (task.status === "in-progress") member.inProgress += 1;
+      if (task.status === "completed") member.completed += 1;
+      if (task.status !== "completed" && task.dueDate && new Date(task.dueDate) < new Date()) {
+        member.overdue += 1;
+      }
+
+      member.tasks.push(task);
+      return map;
+    }, {});
+
+    return Object.values(progress)
+      .map((member) => ({
+        ...member,
+        tasks: member.tasks
+          .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+          .slice(0, 2)
+      }))
+      .sort((a, b) => b.total - a.total);
+  }, [data.myTasks, isAdmin]);
 
   const loadDashboard = async () => {
     try {
@@ -219,6 +265,56 @@ export default function DashboardPage() {
           </div>
         </div>
       </section>
+
+      {isAdmin ? (
+        <section className="dashboard-page__panel">
+          <div className="dashboard-page__section-head">
+            <h2>Member progress</h2>
+            <p>Track assigned work, due dates, and completed task details for each member.</p>
+          </div>
+
+          {memberProgress.length ? (
+            <div className="dashboard-page__member-grid">
+              {memberProgress.slice(0, 4).map((member) => (
+                <article key={member.id} className="dashboard-page__member-card">
+                  <div className="dashboard-page__member-card-header">
+                    <div>
+                      <strong>{member.name}</strong>
+                      <p>{member.email}</p>
+                    </div>
+                    <span>{member.total} tasks</span>
+                  </div>
+
+                  <div className="dashboard-page__member-metrics">
+                    <span>Todo: {member.todo}</span>
+                    <span>In progress: {member.inProgress}</span>
+                    <span>Completed: {member.completed}</span>
+                    <span>Overdue: {member.overdue}</span>
+                  </div>
+
+                  <div className="dashboard-page__member-tasks">
+                    {member.tasks.map((task) => (
+                      <div key={task._id} className="dashboard-page__member-task-item">
+                        <strong>{task.title}</strong>
+                        <small>Due {formatDate(task.dueDate)}</small>
+                        <small>Status {task.status}</small>
+                        {task.completedAt ? (
+                          <small>Completed {formatDate(task.completedAt)}</small>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              title="No member task progress yet"
+              description="Assign tasks to team members and their progress will appear here."
+            />
+          )}
+        </section>
+      ) : null}
 
       <section className="dashboard-page__panel">
         <div className="dashboard-page__section-head">

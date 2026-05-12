@@ -20,6 +20,7 @@ export default function TaskTable({
             <th>Assigned To</th>
             <th>Priority</th>
             <th>Due Date</th>
+            <th>Completed</th>
             <th>Status</th>
             {onEditTask || onDeleteTask ? <th>Actions</th> : null}
           </tr>
@@ -48,6 +49,7 @@ export default function TaskTable({
                   </span>
                 </td>
                 <td>{formatDate(task.dueDate)}</td>
+                <td>{task.completedAt ? formatDate(task.completedAt) : "-"}</td>
                 <td>
                   {canUpdate ? (
                     <select
