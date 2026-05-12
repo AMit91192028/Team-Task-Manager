@@ -2,14 +2,20 @@ import { NavLink } from "react-router-dom";
 import useAuth from "../hooks/useAuth";
 import "./Sidebar.css";
 
-const links = [
+const baseLinks = [
   { to: "/dashboard", label: "Dashboard" },
   { to: "/projects", label: "Projects" },
   { to: "/my-tasks", label: "My Tasks" }
 ];
 
+const adminLinks = [
+  { to: "/overdue-members", label: "Overdue Members" }
+];
+
 export default function Sidebar({ isOpen, onClose }) {
   const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
+  const links = isAdmin ? [...baseLinks, ...adminLinks] : baseLinks;
 
   return (
     <>

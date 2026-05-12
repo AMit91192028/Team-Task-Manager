@@ -4,6 +4,7 @@ import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import MyTasksPage from "./pages/MyTasksPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import OverdueMembersPage from "./pages/OverdueMembersPage";
 import ProjectDetailsPage from "./pages/ProjectDetailsPage";
 import ProjectsPage from "./pages/ProjectsPage";
 import SignupPage from "./pages/SignupPage";
@@ -25,6 +26,7 @@ function App() {
           <Route path="/projects" element={<ProjectsPage />} />
           <Route path="/projects/:projectId" element={<ProjectDetailsPage />} />
           <Route path="/my-tasks" element={<MyTasksPage />} />
+          <Route path="/overdue-members" element={<OverdueMembersPage />} />
         </Route>
       </Route>
 

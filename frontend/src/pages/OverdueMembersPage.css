@@ -1,0 +1,212 @@
+.overdue-members-page {
+  display: grid;
+  gap: 24px;
+}
+
+.overdue-members-page__error {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(209, 67, 67, 0.1);
+  color: var(--danger);
+}
+
+.overdue-members-page__layout {
+  display: grid;
+  gap: 24px;
+}
+
+.overdue-members-page__member-panel {
+  padding: 28px;
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-md);
+  display: grid;
+  gap: 24px;
+  border-left: 4px solid var(--danger);
+}
+
+.overdue-members-page__member-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.overdue-members-page__member-header h2,
+.overdue-members-page__member-header p {
+  margin: 0;
+}
+
+.overdue-members-page__member-header h2 {
+  font-size: 1.5rem;
+}
+
+.overdue-members-page__member-header p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.overdue-members-page__member-stats {
+  display: flex;
+  gap: 24px;
+}
+
+.overdue-members-page__stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.overdue-members-page__stat-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.overdue-members-page__stat-item strong {
+  font-size: 1.8rem;
+}
+
+.overdue-members-page__stat-danger {
+  color: var(--danger);
+}
+
+.overdue-members-page__member-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.overdue-members-page__metric {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(15, 118, 110, 0.05);
+  text-align: center;
+}
+
+.overdue-members-page__metric span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.overdue-members-page__metric strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 1.6rem;
+}
+
+.overdue-members-page__metric--danger {
+  background: rgba(209, 67, 67, 0.08);
+}
+
+.overdue-members-page__metric--danger strong {
+  color: var(--danger);
+}
+
+.overdue-members-page__tasks h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.1rem;
+}
+
+.overdue-members-page__task-list {
+  display: grid;
+  gap: 12px;
+}
+
+.overdue-members-page__task-item {
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(15, 118, 110, 0.04);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto auto;
+  align-items: start;
+}
+
+.overdue-members-page__task-item--todo {
+  border-left: 3px solid #999;
+}
+
+.overdue-members-page__task-item--in-progress {
+  border-left: 3px solid #f59e0b;
+}
+
+.overdue-members-page__task-item--completed {
+  border-left: 3px solid #10b981;
+  opacity: 0.75;
+}
+
+.overdue-members-page__task-content strong {
+  display: block;
+}
+
+.overdue-members-page__task-content strong,
+.overdue-members-page__task-dates small {
+  color: var(--text);
+}
+
+.overdue-members-page__task-content small,
+.overdue-members-page__task-dates small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.overdue-members-page__task-dates {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.overdue-members-page__task-status {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.overdue-members-page__task-status--todo {
+  background: rgba(99, 102, 241, 0.1);
+  color: #4f46e5;
+}
+
+.overdue-members-page__task-status--in-progress {
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+}
+
+.overdue-members-page__task-status--completed {
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+}
+
+@media (max-width: 1024px) {
+  .overdue-members-page__member-header {
+    flex-direction: column;
+  }
+
+  .overdue-members-page__member-stats {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .overdue-members-page__member-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .overdue-members-page__task-item {
+    grid-template-columns: 1fr;
+  }
+
+  .overdue-members-page__task-dates {
+    text-align: left;
+  }
+}
+
+@media (max-width: 640px) {
+  .overdue-members-page__member-metrics {
+    grid-template-columns: 1fr;
+  }
+}
