@@ -34,6 +34,7 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedMemberId, setExpandedMemberId] = useState(null);
 
   const overdueMembers = useMemo(
     () => data.memberProgress.filter((member) => member.overdue > 0),
@@ -245,63 +246,125 @@ export default function DashboardPage() {
         <section className="dashboard-page__panel">
           <div className="dashboard-page__section-head">
             <h2>Member progress</h2>
-            <p>Track assigned work, due dates, and completed task details for each member.</p>
+            <p>Click on a member name to view their progress status, assigned tasks, history, and overdue count.</p>
           </div>
 
           {data.memberProgress.length ? (
-            <>
-              {overdueMembers.length ? (
-                <div className="dashboard-page__overdue-members-panel">
-                  <div className="dashboard-page__section-head">
-                    <h3>Overdue members</h3>
-                    <p>Members with tasks past their due date.</p>
-                  </div>
-                  <div className="dashboard-page__overdue-members-list">
-                    {overdueMembers.map((member) => (
-                      <div key={member._id} className="dashboard-page__overdue-member-item">
-                        <strong>{member.name}</strong>
-                        <span>{member.overdue} overdue task{member.overdue === 1 ? "" : "s"}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : null}
-
-              <div className="dashboard-page__member-grid">
-                {data.memberProgress.slice(0, 4).map((member) => (
-                  <article key={member._id} className="dashboard-page__member-card">
-                    <div className="dashboard-page__member-card-header">
-                      <div>
-                        <strong>{member.name}</strong>
-                        <p>{member.email}</p>
-                      </div>
+            <div className="dashboard-page__members-accordion">
+              {data.memberProgress.map((member) => (
+                <div
+                  key={member._id}
+                  className={`dashboard-page__member-item ${
+                    expandedMemberId === member._id ? "dashboard-page__member-item--expanded" : ""
+                  } ${member.overdue > 0 ? "dashboard-page__member-item--overdue" : ""}`}
+                >
+                  <div
+                    className="dashboard-page__member-header"
+                    onClick={() =>
+                      setExpandedMemberId(expandedMemberId === member._id ? null : member._id)
+                    }
+                  >
+                    <div className="dashboard-page__member-name">
+                      <strong>{member.name}</strong>
+                    </div>
+                    <div className="dashboard-page__member-summary">
                       <span>{member.totalTasks} tasks</span>
+                      {member.overdue > 0 && (
+                        <span className="dashboard-page__overdue-badge">
+                          {member.overdue} overdue
+                        </span>
+                      )}
                     </div>
+                    <span className="dashboard-page__expand-icon">
+                      {expandedMemberId === member._id ? "▼" : "▶"}
+                    </span>
+                  </div>
 
-                    <div className="dashboard-page__member-metrics">
-                      <span>Todo: {member.todo}</span>
-                      <span>In progress: {member.inProgress}</span>
-                      <span>Completed: {member.completed}</span>
-                      <span>Overdue: {member.overdue}</span>
-                    </div>
+                  {expandedMemberId === member._id && (
+                    <div className="dashboard-page__member-details">
+                      <div className="dashboard-page__member-email">{member.email}</div>
 
-                    <div className="dashboard-page__member-tasks">
-                      {member.tasks.slice(0, 3).map((task) => (
-                        <div key={task._id} className="dashboard-page__member-task-item">
-                          <strong>{task.title}</strong>
-                          <small>{task.project?.name ? `Project: ${task.project.name}` : "No project"}</small>
-                          <small>Due {formatDate(task.dueDate)}</small>
-                          <small>Status {task.status}</small>
-                          {task.completedAt ? (
-                            <small>Completed {formatDate(task.completedAt)}</small>
-                          ) : null}
+                      <div className="dashboard-page__member-stats">
+                        <div className="dashboard-page__stat-box">
+                          <span className="dashboard-page__stat-label">Total Tasks</span>
+                          <strong className="dashboard-page__stat-value">
+                            {member.totalTasks}
+                          </strong>
                         </div>
-                      ))}
+                        <div className="dashboard-page__stat-box">
+                          <span className="dashboard-page__stat-label">Todo</span>
+                          <strong className="dashboard-page__stat-value">{member.todo}</strong>
+                        </div>
+                        <div className="dashboard-page__stat-box">
+                          <span className="dashboard-page__stat-label">In Progress</span>
+                          <strong className="dashboard-page__stat-value">
+                            {member.inProgress}
+                          </strong>
+                        </div>
+                        <div className="dashboard-page__stat-box">
+                          <span className="dashboard-page__stat-label">Completed</span>
+                          <strong className="dashboard-page__stat-value">
+                            {member.completed}
+                          </strong>
+                        </div>
+                        <div
+                          className={`dashboard-page__stat-box ${
+                            member.overdue > 0
+                              ? "dashboard-page__stat-box--danger"
+                              : ""
+                          }`}
+                        >
+                          <span className="dashboard-page__stat-label">Overdue</span>
+                          <strong className="dashboard-page__stat-value">
+                            {member.overdue}
+                          </strong>
+                        </div>
+                      </div>
+
+                      <div className="dashboard-page__tasks-history">
+                        <h4>Task History</h4>
+                        {member.tasks && member.tasks.length ? (
+                          <table className="dashboard-page__tasks-table">
+                            <thead>
+                              <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Due Date</th>
+                                <th>Completed Date</th>
+                                <th>Status</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {member.tasks.map((task) => (
+                                <tr key={task._id}>
+                                  <td>{task.title}</td>
+                                  <td>{task.project?.name || "-"}</td>
+                                  <td>{formatDate(task.dueDate)}</td>
+                                  <td>
+                                    {task.completedAt
+                                      ? formatDate(task.completedAt)
+                                      : "-"}
+                                  </td>
+                                  <td>
+                                    <span
+                                      className={`dashboard-page__status-badge dashboard-page__status-${task.status}`}
+                                    >
+                                      {task.status}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        ) : (
+                          <p className="dashboard-page__no-tasks">No tasks assigned</p>
+                        )}
+                      </div>
                     </div>
-                  </article>
-                ))}
-              </div>
-            </>
+                  )}
+                </div>
+              ))}
+            </div>
           ) : (
             <EmptyState
               title="No member task progress yet"

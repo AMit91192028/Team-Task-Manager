@@ -13,6 +13,7 @@ export default function OverdueMembersPage() {
   const [members, setMembers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
+  const [expandedMemberId, setExpandedMemberId] = useState(null);
 
   const loadMembers = async () => {
     try {
@@ -40,79 +41,91 @@ export default function OverdueMembersPage() {
       <PageHeader
         eyebrow="Member tracking"
         title="Overdue Members"
-        description="Team members with tasks that have passed their due date. Review and follow up on delayed deliverables."
+        description="Team members with tasks that have passed their due date. Click a member name to see their overdue tasks."
       />
 
       {error ? <div className="overdue-members-page__error">{error}</div> : null}
 
       {members.length ? (
-        <div className="overdue-members-page__layout">
-          {members.map((member) => (
-            <article key={member._id} className="overdue-members-page__member-panel">
-              <div className="overdue-members-page__member-header">
-                <div>
-                  <h2>{member.name}</h2>
-                  <p>{member.email}</p>
-                </div>
-                <div className="overdue-members-page__member-stats">
-                  <span className="overdue-members-page__stat-item">
-                    <span className="overdue-members-page__stat-label">Total Tasks</span>
-                    <strong>{member.totalTasks}</strong>
-                  </span>
-                  <span className="overdue-members-page__stat-item">
-                    <span className="overdue-members-page__stat-label">Overdue</span>
-                    <strong className="overdue-members-page__stat-danger">{member.overdue}</strong>
-                  </span>
-                  <span className="overdue-members-page__stat-item">
-                    <span className="overdue-members-page__stat-label">Completed</span>
-                    <strong>{member.completed}</strong>
-                  </span>
-                </div>
-              </div>
+        <div className="overdue-members-page__accordion">
+          {members.map((member) => {
+            const overdueTasks = member.tasks.filter(
+              (task) => new Date(task.dueDate) < new Date() && task.status !== "completed"
+            );
 
-              <div className="overdue-members-page__member-metrics">
-                <div className="overdue-members-page__metric">
-                  <span>Todo</span>
-                  <strong>{member.todo}</strong>
+            return (
+              <div
+                key={member._id}
+                className={`overdue-members-page__member-item ${
+                  expandedMemberId === member._id ? "overdue-members-page__member-item--expanded" : ""
+                }`}
+              >
+                <div
+                  className="overdue-members-page__member-header"
+                  onClick={() =>
+                    setExpandedMemberId(expandedMemberId === member._id ? null : member._id)
+                  }
+                >
+                  <div className="overdue-members-page__member-info">
+                    <strong>{member.name}</strong>
+                  </div>
+                  <div className="overdue-members-page__member-summary">
+                    <span>{member.overdue} overdue</span>
+                    <span>{member.totalTasks} tasks</span>
+                  </div>
+                  <span className="overdue-members-page__expand-icon">
+                    {expandedMemberId === member._id ? "▼" : "▶"}
+                  </span>
                 </div>
-                <div className="overdue-members-page__metric">
-                  <span>In progress</span>
-                  <strong>{member.inProgress}</strong>
-                </div>
-                <div className="overdue-members-page__metric">
-                  <span>Completed</span>
-                  <strong>{member.completed}</strong>
-                </div>
-                <div className="overdue-members-page__metric overdue-members-page__metric--danger">
-                  <span>Overdue</span>
-                  <strong>{member.overdue}</strong>
-                </div>
-              </div>
 
-              <div className="overdue-members-page__tasks">
-                <h3>Task History</h3>
-                <div className="overdue-members-page__task-list">
-                  {member.tasks.map((task) => (
-                    <div key={task._id} className={`overdue-members-page__task-item overdue-members-page__task-item--${task.status}`}>
-                      <div className="overdue-members-page__task-content">
-                        <strong>{task.title}</strong>
-                        <small>{task.project?.name || "No project"}</small>
-                      </div>
-                      <div className="overdue-members-page__task-dates">
-                        <small>Due {formatDate(task.dueDate)}</small>
-                        {task.completedAt ? (
-                          <small>Completed {formatDate(task.completedAt)}</small>
-                        ) : null}
-                      </div>
-                      <span className={`overdue-members-page__task-status overdue-members-page__task-status--${task.status}`}>
-                        {task.status}
-                      </span>
+                {expandedMemberId === member._id && (
+                  <div className="overdue-members-page__member-details">
+                    <div className="overdue-members-page__member-email">{member.email}</div>
+
+                    <div className="overdue-members-page__overdue-tasks">
+                      <h4>Overdue Tasks</h4>
+                      {overdueTasks.length ? (
+                        <table className="overdue-members-page__tasks-table">
+                          <thead>
+                            <tr>
+                              <th>Task</th>
+                              <th>Project</th>
+                              <th>Due Date</th>
+                              <th>Completed Date</th>
+                              <th>Status</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {overdueTasks.map((task) => (
+                              <tr key={task._id}>
+                                <td>{task.title}</td>
+                                <td>{task.project?.name || "-"}</td>
+                                <td>{formatDate(task.dueDate)}</td>
+                                <td>
+                                  {task.completedAt ? formatDate(task.completedAt) : "-"}
+                                </td>
+                                <td>
+                                  <span
+                                    className={`overdue-members-page__status-badge overdue-members-page__status-${task.status}`}
+                                  >
+                                    {task.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <p className="overdue-members-page__no-tasks">
+                          No overdue tasks for this member
+                        </p>
+                      )}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
               </div>
-            </article>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <EmptyState
