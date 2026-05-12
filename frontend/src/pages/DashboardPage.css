@@ -205,6 +205,32 @@
   gap: 6px;
 }
 
+.dashboard-page__overdue-members-panel {
+  padding: 24px;
+  border-radius: 24px;
+  background: rgba(255, 228, 228, 0.35);
+  margin-bottom: 18px;
+}
+
+.dashboard-page__overdue-members-list {
+  display: grid;
+  gap: 12px;
+}
+
+.dashboard-page__overdue-member-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.75);
+}
+
+.dashboard-page__overdue-member-item strong {
+  display: block;
+}
+
 @media (max-width: 1120px) {
   .dashboard-page__hero,
   .dashboard-page__content,

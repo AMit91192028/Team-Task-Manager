@@ -140,8 +140,67 @@ async function getTaskStatusCount(req, res) {
   }
 }
 
+async function getMemberProgress(req, res) {
+  try {
+    const projects = await Project.find({ createdBy: req.user._id }).select("_id");
+    const projectIds = projects.map((project) => project._id);
+
+    const tasks = await Task.find({ project: { $in: projectIds } })
+      .populate("assignedTo", "name email role")
+      .populate("project", "name")
+      .sort({ dueDate: 1, completedAt: 1 });
+
+    const members = tasks.reduce((map, task) => {
+      if (!task.assignedTo) return map;
+      const id = task.assignedTo._id.toString();
+
+      if (!map[id]) {
+        map[id] = {
+          _id: id,
+          name: task.assignedTo.name || "Unknown",
+          email: task.assignedTo.email || "",
+          totalTasks: 0,
+          todo: 0,
+          inProgress: 0,
+          completed: 0,
+          overdue: 0,
+          tasks: []
+        };
+      }
+
+      const member = map[id];
+      member.totalTasks += 1;
+      if (task.status === "todo") member.todo += 1;
+      if (task.status === "in-progress") member.inProgress += 1;
+      if (task.status === "completed") member.completed += 1;
+      if (task.status !== "completed" && task.dueDate && new Date(task.dueDate) < new Date()) {
+        member.overdue += 1;
+      }
+
+      member.tasks.push({
+        _id: task._id,
+        title: task.title,
+        status: task.status,
+        dueDate: task.dueDate,
+        completedAt: task.completedAt,
+        project: task.project ? { _id: task.project._id, name: task.project.name } : null
+      });
+
+      return map;
+    }, {});
+
+    return res.status(200).json({
+      success: true,
+      members: Object.values(members)
+    });
+  } catch (error) {
+    return sendControllerError(res, error);
+  }
+}
+
 module.exports = {
   getDashboardSummary,
   getOverdueTasks,
-  getTaskStatusCount
+  getTaskStatusCount,
+  getMemberProgress
 };
